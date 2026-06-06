@@ -16,7 +16,8 @@ jobs:
           python-version: "3.11"
       - run: pip install ruff mypy
       - run: ruff check agents/ backend/ shared/
-      - run: mypy agents/ backend/ shared/ --ignore-missing-imports
+      - run: mypy backend/ shared/ --ignore-missing-imports --namespace-packages --explicit-package-bases
+      - run: mypy agents/ shared/ --ignore-missing-imports --namespace-packages --explicit-package-bases
 
   test-backend:
     runs-on: ubuntu-latest
