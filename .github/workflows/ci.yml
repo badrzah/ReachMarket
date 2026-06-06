@@ -73,6 +73,6 @@ jobs:
       - working-directory: frontend
         run: npm install
       - working-directory: frontend
-        run: npm run lint
+        run: ESLINT_USE_FLAT_CONFIG=false npx eslint . --ext .ts,.tsx --max-warnings 0
       - working-directory: frontend
         run: npm run type-check
