@@ -1,5 +1,4 @@
 """Tests for ColdIQ tool wrappers (PR #16)."""
-import pytest
 from agents.app.tools.skills.coldiq_skills import (
     sales_triggers,
     cold_email_sequence,

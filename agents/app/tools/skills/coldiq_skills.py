@@ -283,7 +283,7 @@ def linkedin_post(
 
     body = [
         f"Here's the reality: {topic} isn't about doing more — it's about doing the right things in the right order.",
-        f"The teams that win focus on one channel, nail the message, and iterate on data. Not shiny objects.",
+        "The teams that win focus on one channel, nail the message, and iterate on data. Not shiny objects.",
         f"If you're building for {target_audience}, the playbook is simpler than you think:",
     ]
 
@@ -381,7 +381,7 @@ def score_coldiq_compliance(
             failing.append("linkedin_hook_stops_scroll")
             suggestions.append("Open with a bold claim, question, or contrarian take.")
 
-        para_count = sum(1 for l in lines if l.strip() == "" or l.strip() == "\n") + 1
+        para_count = sum(1 for line in lines if line.strip() == "" or line.strip() == "\n") + 1
         if 3 <= para_count <= 5:
             passing.append("linkedin_short_paragraphs")
         else:
