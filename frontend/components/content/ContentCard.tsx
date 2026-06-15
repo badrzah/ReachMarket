@@ -1,3 +1,109 @@
-export function ContentCard() {
-  return <div className="rounded border p-4 text-sm text-gray-400">Content — Epic 2</div>;
+"use client";
+
+import React, { useState } from "react";
+import type { ContentAssetRecord } from "@/types";
+
+interface ContentCardProps {
+  asset: ContentAssetRecord;
 }
+
+const TYPE_CONFIG: Record<string, { color: string }> = {
+  cold_email: { color: "var(--text-primary)" },
+  linkedin_post: { color: "var(--text-primary)" },
+  blog_outline: { color: "var(--text-primary)" },
+  ad_copy: { color: "var(--text-primary)" },
+};
+
+const ContentCard = React.memo(function ContentCard({ asset }: ContentCardProps) {
+  const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const config = TYPE_CONFIG[asset.content_type] || { color: "var(--text-secondary)" };
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await navigator.clipboard.writeText(asset.body);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div
+      className="card p-4 cursor-pointer"
+      onClick={() => setExpanded(!expanded)}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span
+            className="text-xs font-semibold px-2 py-0.5 rounded border"
+            style={{ borderColor: "var(--border-color)", color: "var(--text-primary)" }}
+          >
+            {asset.content_type?.replace(/_/g, " ")}
+          </span>
+        </div>
+        <span
+          className={`badge badge-${asset.validation_status === "approved" ? "approved" : "pending"}`}
+        >
+          {asset.validation_status}
+        </span>
+      </div>
+
+      {/* Title */}
+      <h3 className="text-sm font-semibold mb-2 line-clamp-2">
+        {asset.title}
+      </h3>
+
+      {/* Body preview */}
+      <p
+        className="text-xs leading-relaxed mb-3"
+        style={{
+          color: "var(--text-secondary)",
+          display: "-webkit-box",
+          WebkitLineClamp: expanded ? 999 : 3,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          whiteSpace: expanded ? "pre-wrap" : undefined,
+        }}
+      >
+        {asset.body}
+      </p>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {asset.brand_alignment_score != null && (
+            <div className="flex items-center gap-1.5">
+              <div
+                className="w-16 h-1.5 rounded-full"
+                style={{ background: "var(--bg-tertiary)" }}
+              >
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${(asset.brand_alignment_score * 100).toFixed(0)}%`,
+                    background: "var(--text-primary)"
+                  }}
+                />
+              </div>
+              <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                {(asset.brand_alignment_score * 100).toFixed(0)}%
+              </span>
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={handleCopy}
+          className="text-xs px-2 py-1 rounded transition-all hover:bg-[var(--bg-hover)] border"
+          style={{ color: copied ? "var(--text-primary)" : "var(--text-muted)", borderColor: "var(--border-color)" }}
+        >
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+    </div>
+  );
+});
+
+ContentCard.displayName = "ContentCard";
+export default ContentCard;

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import json
 import asyncpg
 from openai import AsyncOpenAI
 from agents.app.config import settings
@@ -32,6 +33,6 @@ class PgVectorRetriever(Retriever):
                 str(query_embedding), namespace, top_k,
             )
         return [
-            {"content": r["content"], "metadata": dict(r["metadata"]), "similarity": r["similarity"]}
+            {"content": r["content"], "metadata": json.loads(r["metadata"]) if isinstance(r["metadata"], str) else dict(r["metadata"] or {}), "similarity": r["similarity"]}
             for r in rows
         ]

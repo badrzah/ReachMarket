@@ -199,7 +199,9 @@ class TokenResponse(BaseModel):
 class ChatRequest(BaseModel):
     session_id: Optional[UUID] = None
     message: str
-    company_id: UUID
+    # company_id is extracted from the JWT by TenantMiddleware;
+    # kept as optional for backwards-compat but never used by the backend.
+    company_id: Optional[UUID] = None
 
 class StrategyGenerateRequest(BaseModel):
     company_profile: CompanyProfile

@@ -167,7 +167,7 @@ async def _generate_with_llm(
     if not settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY not set")
 
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, api_key=settings.openai_api_key)
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, api_key=settings.openai_api_key, request_timeout=30)
     assets: list[ContentAsset] = []
     ctx_str = _ctx_formatted(ctx)
 

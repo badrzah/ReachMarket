@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     langsmith_project: str = "reachgtm"
     jwt_secret: str
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 15
+    access_token_expire_minutes: int = 1440  # 24 hours
     refresh_token_expire_days: int = 30
     s3_bucket_name: str = ""
     agents_url: str = "http://agents:8001"

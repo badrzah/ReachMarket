@@ -18,6 +18,18 @@ async def close_pool() -> None:
     if _pool:
         await _pool.close()
 
+
+def get_pool() -> asyncpg.Pool:
+    """Return the current connection pool.
+
+    Raises RuntimeError if the pool hasn't been initialised yet.
+    Use this instead of importing ``_pool`` directly so that callers
+    always get the live reference.
+    """
+    if _pool is None:
+        raise RuntimeError("Database pool not initialized — call init_pool() first")
+    return _pool
+
 async def get_db(request: Request):
     """FastAPI dependency — yields an asyncpg connection from the pool."""
     assert _pool is not None, "Database pool not initialized — call init_pool() first"

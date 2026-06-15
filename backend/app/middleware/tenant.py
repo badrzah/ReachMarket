@@ -3,11 +3,19 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from jose import jwt, JWTError
 from backend.app.config import settings
 
+# Paths that are either public or handle their own auth (e.g. SSE with query-param JWT).
 AUTH_ROUTES = {"/api/v1/auth/login", "/api/v1/auth/register", "/health"}
+SELF_AUTH_PREFIXES = ("/api/v1/strategy/generate/stream",)
 
 class TenantMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if request.url.path in AUTH_ROUTES or not request.url.path.startswith("/api/v1/"):
+        path = request.url.path
+        if (
+            path in AUTH_ROUTES
+            or request.method == "OPTIONS"
+            or not path.startswith("/api/v1/")
+            or path.startswith(SELF_AUTH_PREFIXES)
+        ):
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization", "")
