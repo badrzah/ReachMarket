@@ -4,64 +4,28 @@ on:
   push:
     branches: [main]
 
-permissions:
-  id-token: write
-  contents: read
-
-env:
-  AWS_REGION: us-east-1
-
 jobs:
-  build-and-deploy:
+  deploy-frontend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/setup-node@v4
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Login to ECR
-        id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Build and push backend
-        run: |
-          IMAGE=${{ steps.ecr-login.outputs.registry }}/reachgtm-backend:${{ github.sha }}
-          docker build -f backend/Dockerfile -t $IMAGE .
-          docker push $IMAGE
-
-      - name: Build and push agents
-        run: |
-          IMAGE=${{ steps.ecr-login.outputs.registry }}/reachgtm-agents:${{ github.sha }}
-          docker build -f agents/Dockerfile -t $IMAGE .
-          docker push $IMAGE
-
-      - name: Build and push frontend
-        run: |
-          IMAGE=${{ steps.ecr-login.outputs.registry }}/reachgtm-frontend:${{ github.sha }}
-          docker build --target production -f frontend/Dockerfile -t $IMAGE frontend/
-          docker push $IMAGE
-
-      - name: Deploy backend to ECS
-        run: |
-          aws ecs update-service \
-            --cluster reachgtm-prod \
-            --service reachgtm-backend \
-            --force-new-deployment
-
-      - name: Deploy agents to ECS
-        run: |
-          aws ecs update-service \
-            --cluster reachgtm-prod \
-            --service reachgtm-agents \
-            --force-new-deployment
-
-      - name: Deploy frontend to ECS
-        run: |
-          aws ecs update-service \
-            --cluster reachgtm-prod \
-            --service reachgtm-frontend \
-            --force-new-deployment
+      - name: Build and deploy to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+        run: npm run deploy

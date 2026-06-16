@@ -55,7 +55,7 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
-];
+] as const;
 
 export default function Sidebar() {
   const pathname = usePathname();

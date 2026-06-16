@@ -15,7 +15,7 @@ ReachGTM is an AI-powered multi-agent Go-To-Market strategy platform. It automat
 | Cache | Redis 7 |
 | MCP Tools | Perplexity, Databar, Fetch, Attio (Phase 2) |
 | Observability | LangSmith Cloud |
-| Deployment | AWS ECS Fargate, ECR, RDS, ElastiCache, S3, CloudFront |
+| Deployment | Cloudflare Workers (frontend) + Docker / VPS (backend) |
 
 ## Team & Ownership
 | Name | Area |

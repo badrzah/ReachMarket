@@ -26,25 +26,25 @@ Unlike ChatGPT (one-shot prompts) or Jasper (template-based), ReachGTM uses a st
 | Cache / Rate limit | Redis 7 (sliding window, 100 req/min per tenant) |
 | MCP Tools | Perplexity (research), Databar, Fetch, Attio (Phase 2) |
 | Observability | LangSmith Cloud |
-| Deployment | AWS ECS Fargate + ECR (prod) / Docker Compose (local) |
+| Deployment | Cloudflare Workers (frontend) + Docker / VPS (backend) |
 
 ---
 
 ## System Architecture
 
 ```
-┌─────────────┐     HTTPS      ┌──────────────────┐    HTTP    ┌──────────────────┐
-│  Browser    │ ─────────────► │  FastAPI Backend  │ ─────────► │  FastAPI Agents  │
-│  Next.js 16 │ ◄── SSE ─────  │  :8000            │           │  LangGraph :8001  │
-└─────────────┘                └──────────────────┘           └──────────────────┘
-                                        │                               │
-                                   asyncpg pool                    asyncpg pool
-                                        │                               │
-                               ┌─────────────────┐         ┌──────────────────────┐
-                               │  PostgreSQL 16   │         │  Redis 7             │
-                               │  + pgvector      │         │  (rate limit, cache) │
-                               │  HNSW index      │         └──────────────────────┘
-                               └─────────────────┘
+┌──────────────────┐     HTTPS      ┌──────────────────┐    HTTP    ┌──────────────────┐
+│  Cloudflare      │ ─────────────► │  FastAPI Backend  │ ─────────► │  FastAPI Agents  │
+│  Workers         │ ◄── SSE ─────  │  :8000            │           │  LangGraph :8001  │
+│  (OpenNext)      │                └──────────────────┘           └──────────────────┘
+│  Next.js 16      │                        │                               │
+└──────────────────┘                   asyncpg pool                    asyncpg pool
+                                             │                               │
+                                    ┌─────────────────┐         ┌──────────────────────┐
+                                    │  PostgreSQL 16   │         │  Redis 7             │
+                                    │  + pgvector      │         │  (rate limit, cache) │
+                                    │  HNSW index      │         └──────────────────────┘
+                                    └─────────────────┘
 ```
 
 ---
