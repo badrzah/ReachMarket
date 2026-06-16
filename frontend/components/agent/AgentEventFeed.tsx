@@ -1,6 +1,8 @@
 "use client";
 
 import type { AgentEvent } from "@/types";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface AgentEventFeedProps {
   events: AgentEvent[];
@@ -61,9 +63,11 @@ export default function AgentEventFeed({ events }: AgentEventFeedProps) {
                 <span style={{ color: "var(--text-muted)" }}>{event.event.replace(/_/g, " ")}</span>
               </div>
               {event.message && (
-                <p className="mt-0.5 truncate" style={{ color: "var(--text-secondary)" }}>
-                  {event.message}
-                </p>
+                <div className="mt-0.5 text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {event.message}
+                  </ReactMarkdown>
+                </div>
               )}
             </div>
             <span className="shrink-0 text-[10px]" style={{ color: "var(--text-muted)" }}>{time}</span>
