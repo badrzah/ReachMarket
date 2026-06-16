@@ -8,21 +8,20 @@
 		"global_fetch_strictly_public"
 	],
 	"workers_dev": true,
+	"vars": {
+		"NEXT_PUBLIC_API_URL": "https://reachgtm-backend.railway.app"
+	},
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
 	"services": [
 		{
-			// Self-reference service binding, the service name must match the worker name
-			// see https://opennext.js.org/cloudflare/caching
 			"binding": "WORKER_SELF_REFERENCE",
 			"service": "reachgtm-frontend"
 		}
 	],
 	"images": {
-		// Enable image optimization
-		// see https://opennext.js.org/cloudflare/howtos/image
 		"binding": "IMAGES"
 	}
 }
