@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from starlette.responses import Response
 from backend.app.db.connection import init_pool, close_pool, get_pool
 from backend.app.middleware.tenant import TenantMiddleware
 from backend.app.middleware.rate_limit import RateLimitMiddleware
@@ -46,5 +47,6 @@ app.include_router(content.router, prefix="/api/v1")
 app.include_router(knowledge.router, prefix="/api/v1")
 
 @app.get("/health")
-async def health():
+async def health(response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
     return {"service": "backend", "status": "ok"}
