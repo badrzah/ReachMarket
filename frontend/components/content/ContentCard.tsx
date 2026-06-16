@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import type { ContentAssetRecord } from "@/types";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ContentCardProps {
   asset: ContentAssetRecord;
@@ -55,19 +57,22 @@ const ContentCard = React.memo(function ContentCard({ asset }: ContentCardProps)
       </h3>
 
       {/* Body preview */}
-      <p
+      <div
         className="text-xs leading-relaxed mb-3"
         style={{
           color: "var(--text-secondary)",
-          display: "-webkit-box",
-          WebkitLineClamp: expanded ? 999 : 3,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-          whiteSpace: expanded ? "pre-wrap" : undefined,
+          ...(expanded ? {} : {
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }),
         }}
       >
-        {asset.body}
-      </p>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {asset.body}
+        </ReactMarkdown>
+      </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between">
