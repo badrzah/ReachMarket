@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import AuthLayout from "@/components/layout/AuthLayout";
 import { authFetch } from "@/lib/auth-fetch";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatMessage {
   role: "user" | "agent";
@@ -171,7 +173,11 @@ export default function AgentChatPage() {
                     </span>
                   </div>
                 )}
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
                 <p className="text-[10px] mt-2 opacity-50">
                   {msg.timestamp.toLocaleTimeString()}
                 </p>
