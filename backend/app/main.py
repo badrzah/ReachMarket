@@ -1,14 +1,22 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.db.connection import init_pool, close_pool
+from backend.app.db.connection import init_pool, close_pool, get_pool
 from backend.app.middleware.tenant import TenantMiddleware
 from backend.app.middleware.rate_limit import RateLimitMiddleware
 from backend.app.api import auth, chat, strategy, content, knowledge
+from pathlib import Path
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_pool()
+    # Auto-run migrations on startup
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        migration_path = Path(__file__).parent / "db" / "migrations" / "init.sql"
+        if migration_path.exists():
+            sql = migration_path.read_text()
+            await conn.execute(sql)
     yield
     await close_pool()
 
