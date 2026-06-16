@@ -105,29 +105,59 @@ Set these in the Cloudflare Dashboard → Workers & Pages → `reachgtm-frontend
 
 ## Backend Deployment
 
-The backend (FastAPI) and agents (LangGraph) still run as Python services with PostgreSQL + pgvector and Redis. Choose any provider:
+The backend (FastAPI) and agents (LangGraph) run as Python services with PostgreSQL + pgvector and Redis.
 
-### Option A: Docker on a VPS
-```bash
-docker compose -f infra/docker-compose.prod.yml up --build -d
-```
+### Railway (recommended)
 
-### Option B: Railway / Render / Fly.io
-- Deploy the `backend/` and `agents/` directories separately
-- Set up PostgreSQL 16 with pgvector extension
-- Set up Redis
-- Configure environment variables (see `.env.example`)
+Railway gives you $5 free credit/month — enough for both services + PostgreSQL + Redis.
 
-### Required backend env vars
-| Variable | Required | Description |
-|---|---|---|
-| `OPENAI_API_KEY` | Yes | OpenAI API key |
-| `JWT_SECRET` | Yes | Random 32+ char string |
-| `DATABASE_URL` | Yes | asyncpg-compatible PostgreSQL URL |
-| `REDIS_URL` | Yes | Redis connection URL |
-| `LANGSMITH_API_KEY` | No | LangSmith observability |
-| `PERPLEXITY_API_KEY` | No | Research agent MCP tool |
-| `ENVIRONMENT` | No | `development` or `production` |
+**Step 1 — Set up databases**
+
+In your Railway project dashboard:
+- Click **New** → **Provision PostgreSQL** → name: `reachgtm-db`
+- Click **New** → **Add Plugin** → search **Redis** → add it
+
+Railway auto-generates `DATABASE_URL` and `REDIS_URL` — note these down.
+
+**Step 2 — Deploy the Backend**
+
+| Setting | Value |
+|---|---|
+| Source | GitHub → `badrzah/ReachMarket` |
+| Branch | `cloudflare-deploy` |
+| Root Directory | *(leave empty — uses repo root)* |
+| Dockerfile Path | `backend/Dockerfile` |
+
+Railway will build from root (so `shared/` is available) using `backend/Dockerfile`.
+
+**Step 3 — Deploy the Agents**
+
+Same project, add another service:
+
+| Setting | Value |
+|---|---|
+| Source | GitHub → `badrzah/ReachMarket` |
+| Branch | `cloudflare-deploy` |
+| Root Directory | *(leave empty — uses repo root)* |
+| Dockerfile Path | `agents/Dockerfile` |
+
+**Step 4 — Environment Variables**
+
+For both services, set these in Railway dashboard → Variables:
+
+| Variable | Source |
+|---|---|
+| `DATABASE_URL` | Auto from PostgreSQL plugin |
+| `REDIS_URL` | Auto from Redis plugin |
+| `JWT_SECRET` | Generate a random 32-char string |
+| `OPENAI_API_KEY` | Your OpenAI key |
+| `ENVIRONMENT` | `production` |
+| `NEXT_PUBLIC_API_URL` | The backend's Railway URL (e.g. `https://reachgtm-backend.up.railway.app`) |
+
+**Step 5 — Link with Frontend**
+
+In Cloudflare Dashboard → reachgtm-frontend → Settings → Variables:
+- Set `NEXT_PUBLIC_API_URL` = your backend's Railway URL
 
 ---
 
