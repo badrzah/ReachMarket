@@ -1,16 +1,33 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from backend.app.db.connection import init_pool, close_pool, get_pool
 from backend.app.middleware.tenant import TenantMiddleware
 from backend.app.middleware.rate_limit import RateLimitMiddleware
 from backend.app.api import auth, chat, strategy, content, knowledge
 from pathlib import Path
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+
+class CORSHeaderMiddleware(BaseHTTPMiddleware):
+    """Add CORS headers manually since Railway's proxy strips the standard ones."""
+    async def dispatch(self, request: Request, call_next):
+        origin = request.headers.get("origin", "")
+        response: Response = await call_next(request)
+        if origin:
+            response.headers["Access-Control-Allow-Origin"] = origin
+        else:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        if request.method == "OPTIONS":
+            response.status_code = 204
+        return response
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_pool()
-    # Auto-run migrations on startup
     pool = get_pool()
     async with pool.acquire() as conn:
         migration_path = Path(__file__).parent / "db" / "migrations" / "init.sql"
@@ -22,15 +39,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="ReachGTM Backend", version="0.1.0", lifespan=lifespan)
 
-app.add_middleware(CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://reachgtm-frontend.badrpcc.workers.dev",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Custom CORS middleware (outermost, runs first)
+app.add_middleware(CORSHeaderMiddleware)
 app.add_middleware(TenantMiddleware)
 app.add_middleware(RateLimitMiddleware)
 
