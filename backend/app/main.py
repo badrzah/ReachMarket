@@ -1,6 +1,5 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from starlette.responses import Response
 from backend.app.db.connection import init_pool, close_pool, get_pool
 from backend.app.middleware.tenant import TenantMiddleware
 from backend.app.middleware.rate_limit import RateLimitMiddleware
@@ -21,22 +20,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="ReachGTM Backend", version="0.1.0", lifespan=lifespan)
 
-# ASGI middleware to add CORS headers at the protocol level
-@app.middleware("http")
-async def cors_middleware(request, call_next):
-    origin = request.headers.get("origin", "")
-    response = await call_next(request)
-    if origin:
-        response.headers["Access-Control-Allow-Origin"] = origin
-    else:
-        response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    if request.method == "OPTIONS":
-        response.status_code = 204
-    return response
-
 app.add_middleware(TenantMiddleware)
 app.add_middleware(RateLimitMiddleware)
 
@@ -47,6 +30,5 @@ app.include_router(content.router, prefix="/api/v1")
 app.include_router(knowledge.router, prefix="/api/v1")
 
 @app.get("/health")
-async def health(response: Response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
+async def health():
     return {"service": "backend", "status": "ok"}
