@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 import asyncpg
 
-from backend.app.db.connection import get_db, get_pool
+from backend.app.db.connection import get_db_tenant, get_pool
 from backend.app.services import strategy_service
 from shared.schemas import StrategyGenerateRequest
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/strategy", tags=["strategy"])
 async def generate_strategy(
     body: StrategyGenerateRequest,
     request: Request,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Trigger LangGraph pipeline. Creates a strategy row, dispatches to agents."""
     company_id = request.state.company_id
@@ -132,7 +132,7 @@ async def stream_strategy(
 @router.get("/")
 async def list_strategies(
     request: Request,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """List all strategies for the current company."""
     strategies = await strategy_service.list_strategies(conn)
@@ -143,7 +143,7 @@ async def list_strategies(
 async def get_strategy(
     strategy_id: str,
     request: Request,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Fetch a single strategy by ID."""
     strategy = await strategy_service.get_strategy(conn, strategy_id)

@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 import asyncpg
 
-from backend.app.db.connection import get_db
+from backend.app.db.connection import get_db_tenant
 from backend.app.services import content_service
 from shared.schemas import ContentGenerateRequest
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/content", tags=["content"])
 async def generate_content(
     body: ContentGenerateRequest,
     request: Request,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Generate content assets via the agent pipeline and persist to DB."""
     company_id = request.state.company_id
@@ -63,7 +63,7 @@ async def list_content(
     request: Request,
     content_type: str | None = None,
     strategy_id: str | None = None,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """List content assets for the current company with optional filters."""
     assets = await content_service.list_content_assets(
@@ -76,7 +76,7 @@ async def list_content(
 async def get_content(
     asset_id: str,
     request: Request,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Fetch a single content asset by ID."""
     asset = await content_service.get_content_asset(conn, asset_id)

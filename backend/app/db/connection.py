@@ -24,12 +24,25 @@ def get_pool() -> asyncpg.Pool:
         raise RuntimeError("Database pool not initialized — call init_pool() first")
     return _pool
 
-async def get_db(request: Request):
-    assert _pool is not None, "Database pool not initialized — call init_pool() first"
+async def get_db_tenant(request: Request):
+    """Get a DB connection with RLS enforced (for tenant-scoped operations)."""
+    assert _pool is not None, "Database pool not initialized"
     async with _pool.acquire() as conn:
         company_id = getattr(request.state, "company_id", None)
         if company_id:
             await conn.execute(
                 "SELECT set_config('app.current_company_id', $1, FALSE)", company_id
             )
+        yield conn
+
+async def get_db_auth(request: Request):
+    """Get a DB connection without tenant isolation (for login/register/refresh).
+    
+    Uses the superuser pool to bypass RLS, since auth operations need to
+    look up users by email before a tenant context is established.
+    """
+    global _pool
+    if _pool is None:
+        raise RuntimeError("Database pool not initialized")
+    async with _pool.acquire() as conn:
         yield conn

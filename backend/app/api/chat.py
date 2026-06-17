@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 import asyncpg
 import httpx
 
-from backend.app.db.connection import get_db
+from backend.app.db.connection import get_db_tenant
 from backend.app.config import settings
 from shared.schemas import ChatRequest
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 async def chat(
     body: ChatRequest,
     request: Request,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Chat endpoint — streams agent responses via SSE."""
     company_id = request.state.company_id

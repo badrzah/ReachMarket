@@ -4,7 +4,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 import asyncpg
 
-from backend.app.db.connection import get_db
+from backend.app.db.connection import get_db_tenant
 from backend.app.services import knowledge_service
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ async def upload_document(
     request: Request,
     file: UploadFile = File(...),
     doc_type: str = Form(...),
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Upload a PDF or DOCX document for knowledge ingestion."""
     if doc_type not in ALLOWED_TYPES:
@@ -49,7 +49,7 @@ async def upload_document(
 @router.get("/")
 async def list_documents(
     request: Request,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """List all knowledge documents for the current company."""
     rows = await conn.fetch(
@@ -74,7 +74,7 @@ async def list_documents(
 async def delete_document(
     document_id: str,
     request: Request,
-    conn: asyncpg.Connection = Depends(get_db),
+    conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Delete a knowledge document and its chunks."""
     result = await conn.execute(

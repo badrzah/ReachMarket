@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from jose import jwt, JWTError
 import asyncpg
 from shared.schemas import RegisterRequest, LoginRequest, TokenResponse
-from backend.app.db.connection import get_db
+from backend.app.db.connection import get_db_auth, get_db_tenant
 from backend.app.services import auth_service
 from backend.app.config import settings
 
@@ -18,7 +18,7 @@ def _build_token_response(user: dict) -> TokenResponse:
     )
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(body: RegisterRequest, conn: asyncpg.Connection = Depends(get_db)):
+async def register(body: RegisterRequest, conn: asyncpg.Connection = Depends(get_db_auth)):
     existing = await conn.fetchval("SELECT id FROM users WHERE email = $1", body.email)
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -26,14 +26,14 @@ async def register(body: RegisterRequest, conn: asyncpg.Connection = Depends(get
     return _build_token_response(user)
 
 @router.post("/login", response_model=TokenResponse)
-async def login(body: LoginRequest, conn: asyncpg.Connection = Depends(get_db)):
+async def login(body: LoginRequest, conn: asyncpg.Connection = Depends(get_db_auth)):
     user = await auth_service.authenticate_user(conn, body.email, body.password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return _build_token_response(user)
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh(request: Request, conn: asyncpg.Connection = Depends(get_db)):
+async def refresh(request: Request, conn: asyncpg.Connection = Depends(get_db_tenant)):
     body = await request.json()
     token = body.get("refresh_token", "")
     try:
@@ -51,8 +51,7 @@ async def refresh(request: Request, conn: asyncpg.Connection = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 @router.post("/invite")
-async def invite(request: Request, conn: asyncpg.Connection = Depends(get_db)):
-    # TODO Epic 1 PR #4 — requires owner/admin role check
+async def invite(request: Request, conn: asyncpg.Connection = Depends(get_db_tenant)):
     company_id = request.state.company_id
     user_id = request.state.user_id
     body = await request.json()
@@ -61,7 +60,7 @@ async def invite(request: Request, conn: asyncpg.Connection = Depends(get_db)):
     return {"invite_token": token, "invite_url": f"/register?invite={token}"}
 
 @router.post("/accept-invite", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def accept_invite(request: Request, conn: asyncpg.Connection = Depends(get_db)):
+async def accept_invite(request: Request, conn: asyncpg.Connection = Depends(get_db_tenant)):
     body = await request.json()
     invite_token = body.get("invite_token", "")
     try:
