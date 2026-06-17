@@ -111,7 +111,10 @@ CREATE POLICY tenant_isolation ON companies
     USING (id = current_setting('app.current_company_id', TRUE)::UUID);
 
 CREATE POLICY tenant_isolation ON users
-    USING (company_id = current_setting('app.current_company_id', TRUE)::UUID);
+    USING (
+        company_id = current_setting('app.current_company_id', TRUE)::UUID
+        OR current_setting('app.current_company_id', TRUE) IS NULL
+    );
 
 CREATE POLICY tenant_isolation ON knowledge_documents
     USING (company_id = current_setting('app.current_company_id', TRUE)::UUID);
@@ -129,10 +132,6 @@ CREATE POLICY tenant_isolation ON company_memory
     USING (company_id = current_setting('app.current_company_id', TRUE)::UUID);
 
 -- Superuser bypass for migrations and internal services
-CREATE POLICY superuser_bypass ON companies TO postgres USING (TRUE);
-CREATE POLICY superuser_bypass ON users TO postgres USING (TRUE);
-CREATE POLICY superuser_bypass ON knowledge_documents TO postgres USING (TRUE);
-CREATE POLICY superuser_bypass ON document_chunks TO postgres USING (TRUE);
-CREATE POLICY superuser_bypass ON strategies TO postgres USING (TRUE);
-CREATE POLICY superuser_bypass ON content_assets TO postgres USING (TRUE);
-CREATE POLICY superuser_bypass ON company_memory TO postgres USING (TRUE);
+-- NOTE: Removed because Railway connects as postgres (superuser),
+-- which lets all tenants see each other's data.
+-- RLS alone is sufficient for tenant isolation.

@@ -36,13 +36,12 @@ async def get_db_tenant(request: Request):
         yield conn
 
 async def get_db_auth(request: Request):
-    """Get a DB connection without tenant isolation (for login/register/refresh).
+    """Get a DB connection without RLS isolation (for login/register).
     
-    Uses the superuser pool to bypass RLS, since auth operations need to
-    look up users by email before a tenant context is established.
+    Doesn't set company context, so the RLS policy on users allows
+    email-based lookups across all tenants. This is safe because the
+    user still needs valid credentials to authenticate.
     """
-    global _pool
-    if _pool is None:
-        raise RuntimeError("Database pool not initialized")
+    assert _pool is not None, "Database pool not initialized"
     async with _pool.acquire() as conn:
         yield conn
