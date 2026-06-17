@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import AuthLayout from "@/components/layout/AuthLayout";
 import ContentCard from "@/components/content/ContentCard";
@@ -11,24 +11,25 @@ export default function ContentPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
 
+  const fetchContent = useCallback(async () => {
+    const token = localStorage.getItem("access_token");
+    const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    try {
+      const url = filter
+        ? `${base}/api/v1/content/?content_type=${filter}`
+        : `${base}/api/v1/content/`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setAssets(data.assets || []);
+    } catch {
+      setAssets([]);
+    }
+    setLoading(false);
+  }, [filter]);
+
   useEffect(() => {
-    const fetchContent = async () => {
-      const token = localStorage.getItem("access_token");
-      const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-      try {
-        const url = filter
-          ? `${base}/api/v1/content/?content_type=${filter}`
-          : `${base}/api/v1/content/`;
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setAssets(data.assets || []);
-      } catch {
-        setAssets([]);
-      }
-      setLoading(false);
-    };
     fetchContent();
     
     // Re-fetch when token changes (different account login)
@@ -41,7 +42,7 @@ export default function ContentPage() {
       }
     }, 500);
     return () => clearInterval(interval);
-  }, [filter]);
+  }, [fetchContent]);
 
   return (
     <AuthLayout>
@@ -96,7 +97,7 @@ export default function ContentPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {assets.map((asset) => (
-              <ContentCard key={asset.id} asset={asset} onDelete={(id) => setAssets(prev => prev.filter(a => a.id !== id))} />
+              <ContentCard key={asset.id} asset={asset} onDelete={fetchContent} />
             ))}
           </div>
         )}
