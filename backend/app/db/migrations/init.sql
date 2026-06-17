@@ -107,40 +107,40 @@ ALTER TABLE content_assets      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE company_memory      ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies (reads current_setting set by tenant middleware)
-CREATE POLICY IF NOT EXISTS tenant_isolation ON companies
+CREATE POLICY tenant_isolation ON companies
     USING (id = current_setting('app.current_company_id', TRUE)::UUID);
 
-CREATE POLICY IF NOT EXISTS tenant_isolation ON users
+CREATE POLICY tenant_isolation ON users
     USING (
         company_id = current_setting('app.current_company_id', TRUE)::UUID
         OR current_setting('app.current_company_id', TRUE) IS NULL
     );
 
-CREATE POLICY IF NOT EXISTS tenant_isolation ON knowledge_documents
+CREATE POLICY tenant_isolation ON knowledge_documents
     USING (
         company_id = current_setting('app.current_company_id', TRUE)::UUID
         OR current_setting('app.current_company_id', TRUE) IS NULL
     );
 
-CREATE POLICY IF NOT EXISTS tenant_isolation ON document_chunks
+CREATE POLICY tenant_isolation ON document_chunks
     USING (
         company_id = current_setting('app.current_company_id', TRUE)::UUID
         OR current_setting('app.current_company_id', TRUE) IS NULL
     );
 
-CREATE POLICY IF NOT EXISTS tenant_isolation ON strategies
+CREATE POLICY tenant_isolation ON strategies
     USING (
         company_id = current_setting('app.current_company_id', TRUE)::UUID
         OR current_setting('app.current_company_id', TRUE) IS NULL
     );
 
-CREATE POLICY IF NOT EXISTS tenant_isolation ON content_assets
+CREATE POLICY tenant_isolation ON content_assets
     USING (
         company_id = current_setting('app.current_company_id', TRUE)::UUID
         OR current_setting('app.current_company_id', TRUE) IS NULL
     );
 
-CREATE POLICY IF NOT EXISTS tenant_isolation ON company_memory
+CREATE POLICY tenant_isolation ON company_memory
     USING (
         company_id = current_setting('app.current_company_id', TRUE)::UUID
         OR current_setting('app.current_company_id', TRUE) IS NULL
