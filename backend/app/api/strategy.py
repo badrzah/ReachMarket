@@ -135,7 +135,7 @@ async def list_strategies(
     conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """List all strategies for the current company."""
-    strategies = await strategy_service.list_strategies(conn)
+    strategies = await strategy_service.list_strategies(conn, request.state.company_id)
     return {"strategies": strategies, "total": len(strategies)}
 
 
@@ -146,7 +146,7 @@ async def get_strategy(
     conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Fetch a single strategy by ID."""
-    strategy = await strategy_service.get_strategy(conn, strategy_id)
+    strategy = await strategy_service.get_strategy(conn, strategy_id, request.state.company_id)
     if not strategy:
         raise HTTPException(status_code=404, detail="Strategy not found")
     return strategy

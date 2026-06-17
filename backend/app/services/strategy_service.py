@@ -30,21 +30,22 @@ async def create_strategy(
     return _row_to_dict(row)
 
 
-async def get_strategy(conn: asyncpg.Connection, strategy_id: str) -> Optional[dict]:
-    """Fetch a single strategy by ID (RLS enforced)."""
+async def get_strategy(conn: asyncpg.Connection, strategy_id: str, company_id: str) -> Optional[dict]:
+    """Fetch a single strategy by ID (scoped to company)."""
     row = await conn.fetchrow(
         """SELECT id, company_id, user_id, session_id, status, payload, created_at, updated_at
-           FROM strategies WHERE id = $1""",
-        uuid.UUID(strategy_id),
+           FROM strategies WHERE id = $1 AND company_id = $2""",
+        uuid.UUID(strategy_id), uuid.UUID(company_id),
     )
     return _row_to_dict(row) if row else None
 
 
-async def list_strategies(conn: asyncpg.Connection) -> list[dict]:
-    """List all strategies for the current company (RLS enforced)."""
+async def list_strategies(conn: asyncpg.Connection, company_id: str) -> list[dict]:
+    """List all strategies for the current company."""
     rows = await conn.fetch(
         """SELECT id, company_id, user_id, session_id, status, payload, created_at, updated_at
-           FROM strategies ORDER BY created_at DESC"""
+           FROM strategies WHERE company_id = $1 ORDER BY created_at DESC""",
+        uuid.UUID(company_id),
     )
     return [_row_to_dict(r) for r in rows]
 
