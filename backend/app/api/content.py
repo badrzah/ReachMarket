@@ -67,7 +67,7 @@ async def list_content(
 ):
     """List content assets for the current company with optional filters."""
     assets = await content_service.list_content_assets(
-        conn, content_type=content_type, strategy_id=strategy_id
+        conn, company_id=request.state.company_id, content_type=content_type, strategy_id=strategy_id
     )
     return {"assets": assets, "total": len(assets)}
 
@@ -79,7 +79,7 @@ async def get_content(
     conn: asyncpg.Connection = Depends(get_db_tenant),
 ):
     """Fetch a single content asset by ID."""
-    asset = await content_service.get_content_asset(conn, asset_id)
+    asset = await content_service.get_content_asset(conn, asset_id, request.state.company_id)
     if not asset:
         raise HTTPException(status_code=404, detail="Content asset not found")
     return asset

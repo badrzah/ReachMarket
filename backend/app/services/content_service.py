@@ -38,15 +38,16 @@ async def create_content_asset(
 
 async def list_content_assets(
     conn: asyncpg.Connection,
+    company_id: str,
     content_type: Optional[str] = None,
     strategy_id: Optional[str] = None,
 ) -> list[dict]:
-    """List content assets for the current company (RLS enforced)."""
+    """List content assets for the current company."""
     query = """SELECT id, company_id, strategy_id, content_type, title, body,
                       validation_status, brand_alignment_score, created_at
                FROM content_assets"""
-    conditions = []
-    params = []
+    conditions = ["company_id = $1"]
+    params = [uuid.UUID(company_id)]
 
     if content_type:
         params.append(content_type)
@@ -55,21 +56,20 @@ async def list_content_assets(
         params.append(uuid.UUID(strategy_id))
         conditions.append(f"strategy_id = ${len(params)}")
 
-    if conditions:
-        query += " WHERE " + " AND ".join(conditions)
+    query += " WHERE " + " AND ".join(conditions)
     query += " ORDER BY created_at DESC"
 
     rows = await conn.fetch(query, *params)
     return [_row_to_dict(r) for r in rows]
 
 
-async def get_content_asset(conn: asyncpg.Connection, asset_id: str) -> Optional[dict]:
-    """Get a single content asset by ID (RLS enforced)."""
+async def get_content_asset(conn: asyncpg.Connection, asset_id: str, company_id: str) -> Optional[dict]:
+    """Get a single content asset by ID (scoped to company)."""
     row = await conn.fetchrow(
         """SELECT id, company_id, strategy_id, content_type, title, body,
                   validation_status, brand_alignment_score, created_at
-           FROM content_assets WHERE id = $1""",
-        uuid.UUID(asset_id),
+           FROM content_assets WHERE id = $1 AND company_id = $2""",
+        uuid.UUID(asset_id), uuid.UUID(company_id),
     )
     return _row_to_dict(row) if row else None
 
