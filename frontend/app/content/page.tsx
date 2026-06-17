@@ -96,7 +96,7 @@ export default function ContentPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {assets.map((asset) => (
-              <ContentCard key={asset.id} asset={asset} />
+              <ContentCard key={asset.id} asset={asset} onDelete={(id) => setAssets(assets.filter(a => a.id !== id))} />
             ))}
           </div>
         )}

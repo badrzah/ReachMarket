@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 
 interface ContentCardProps {
   asset: ContentAssetRecord;
+  onDelete?: (id: string) => void;
 }
 
 function formatBody(body: string, contentType: string): string {
@@ -29,9 +30,10 @@ const TYPE_CONFIG: Record<string, { color: string }> = {
   ad_copy: { color: "var(--text-primary)" },
 };
 
-const ContentCard = React.memo(function ContentCard({ asset }: ContentCardProps) {
+const ContentCard = React.memo(function ContentCard({ asset, onDelete }: ContentCardProps) {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const config = TYPE_CONFIG[asset.content_type] || { color: "var(--text-secondary)" };
 
@@ -40,6 +42,24 @@ const ContentCard = React.memo(function ContentCard({ asset }: ContentCardProps)
     await navigator.clipboard.writeText(asset.body);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Delete this content asset?")) return;
+    setDeleting(true);
+    const token = localStorage.getItem("access_token");
+    const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    try {
+      const res = await fetch(`${base}/api/v1/content/${asset.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        onDelete?.(asset.id);
+      }
+    } catch {}
+    setDeleting(false);
   };
 
   return (
@@ -83,7 +103,11 @@ const ContentCard = React.memo(function ContentCard({ asset }: ContentCardProps)
         }}
       >
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {formatBody(asset.body, asset.content_type)}
+          {asset.content_type === "ad_copy" && asset.body.startsWith("ContentAsset")
+            ? "```\n" + asset.body + "\n```"
+            : asset.content_type === "linkedin_post" && !asset.body.startsWith("```")
+              ? "```json\n" + asset.body + "\n```"
+              : asset.body}
         </ReactMarkdown>
       </div>
 
@@ -111,13 +135,23 @@ const ContentCard = React.memo(function ContentCard({ asset }: ContentCardProps)
           )}
         </div>
 
-        <button
-          onClick={handleCopy}
-          className="text-xs px-2 py-1 rounded transition-all hover:bg-[var(--bg-hover)] border"
-          style={{ color: copied ? "var(--text-primary)" : "var(--text-muted)", borderColor: "var(--border-color)" }}
-        >
-          {copied ? "Copied" : "Copy"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs px-2 py-1 rounded transition-all hover:bg-red-500/10 border"
+            style={{ color: "var(--text-muted)", borderColor: "var(--border-color)" }}
+          >
+            {deleting ? "..." : "Delete"}
+          </button>
+          <button
+            onClick={handleCopy}
+            className="text-xs px-2 py-1 rounded transition-all hover:bg-[var(--bg-hover)] border"
+            style={{ color: copied ? "var(--text-primary)" : "var(--text-muted)", borderColor: "var(--border-color)" }}
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
       </div>
     </div>
   );

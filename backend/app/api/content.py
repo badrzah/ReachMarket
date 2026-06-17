@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 import asyncpg
@@ -83,3 +84,19 @@ async def get_content(
     if not asset:
         raise HTTPException(status_code=404, detail="Content asset not found")
     return asset
+
+
+@router.delete("/{asset_id}")
+async def delete_content(
+    asset_id: str,
+    request: Request,
+    conn: asyncpg.Connection = Depends(get_db_tenant),
+):
+    """Delete a content asset (scoped to company)."""
+    result = await conn.execute(
+        "DELETE FROM content_assets WHERE id = $1 AND company_id = $2",
+        uuid.UUID(asset_id), uuid.UUID(request.state.company_id),
+    )
+    if result == "DELETE 0":
+        raise HTTPException(status_code=404, detail="Content asset not found")
+    return {"status": "deleted"}
