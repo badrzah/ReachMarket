@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
 import type { StrategyRecord, GTMStrategy } from "@/types";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const TABS = ["Overview", "ICP", "Channels", "Battlecards", "Growth Loops", "90-Day Plan"];
 
@@ -126,7 +128,11 @@ export default function StrategyDetailPage() {
                     <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-secondary)" }}>
                       Positioning Statement
                     </h3>
-                    <p className="text-lg leading-relaxed">{payload.positioning_statement}</p>
+                    <p className="text-lg leading-relaxed">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {payload.positioning_statement}
+                      </ReactMarkdown>
+                    </p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="card p-5">
