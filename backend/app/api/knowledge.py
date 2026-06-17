@@ -55,7 +55,9 @@ async def list_documents(
     rows = await conn.fetch(
         """SELECT id, company_id, filename, doc_type, status, chunk_count, created_at
            FROM knowledge_documents
-           ORDER BY created_at DESC"""
+           WHERE company_id = $1
+           ORDER BY created_at DESC""",
+        uuid.UUID(request.state.company_id),
     )
     documents = []
     for row in rows:
@@ -78,8 +80,8 @@ async def delete_document(
 ):
     """Delete a knowledge document and its chunks."""
     result = await conn.execute(
-        "DELETE FROM knowledge_documents WHERE id = $1",
-        uuid.UUID(document_id),
+        "DELETE FROM knowledge_documents WHERE id = $1 AND company_id = $2",
+        uuid.UUID(document_id), uuid.UUID(request.state.company_id),
     )
     if result == "DELETE 0":
         raise HTTPException(status_code=404, detail="Document not found")
