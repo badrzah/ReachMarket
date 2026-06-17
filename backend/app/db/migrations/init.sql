@@ -92,10 +92,10 @@ CREATE TABLE IF NOT EXISTS company_memory (
 );
 
 -- HNSW index for fast cosine similarity search
-CREATE INDEX IF NOT EXISTS ON document_chunks USING hnsw (embedding vector_cosine_ops)
+CREATE INDEX IF NOT EXISTS idx_doc_chunks_embedding ON document_chunks USING hnsw (embedding vector_cosine_ops)
     WITH (m = 16, ef_construction = 64);
 
-CREATE INDEX IF NOT EXISTS ON document_chunks (company_id, namespace);
+CREATE INDEX IF NOT EXISTS idx_doc_chunks_company ON document_chunks (company_id, namespace);
 
 -- Row-Level Security
 ALTER TABLE companies           ENABLE ROW LEVEL SECURITY;
