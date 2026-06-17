@@ -1,6 +1,6 @@
--- Extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS vector;
+-- Extensions (created manually as postgres superuser)
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Companies
 CREATE TABLE companies (
