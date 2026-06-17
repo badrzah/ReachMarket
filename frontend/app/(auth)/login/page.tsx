@@ -20,7 +20,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await login({ email, password });
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch {
       // error already set in useAuth
     }

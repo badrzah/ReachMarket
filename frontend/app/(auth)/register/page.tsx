@@ -14,7 +14,7 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       await register({ email, password, company_name: companyName });
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch {
       // error already set in useAuth
     }

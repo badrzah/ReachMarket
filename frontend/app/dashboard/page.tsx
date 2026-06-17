@@ -11,6 +11,7 @@ interface DashStats {
 }
 
 export default function DashboardPage() {
+  const [tokenCheck, setTokenCheck] = useState(0);
   const [stats, setStats] = useState<DashStats>({ strategies: 0, content: 0, knowledge: 0 });
   const [strategies, setStrategies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +45,17 @@ export default function DashboardPage() {
       setLoading(false);
     };
     fetchDashData();
+    
+    // Watch for token changes (user switched accounts)
+    let lastToken = localStorage.getItem("access_token");
+    const interval = setInterval(() => {
+      const t = localStorage.getItem("access_token");
+      if (t !== lastToken) {
+        lastToken = t;
+        fetchDashData();
+      }
+    }, 500);
+    return () => clearInterval(interval);
   }, []);
 
   const statCards = [
