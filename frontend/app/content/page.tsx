@@ -30,6 +30,17 @@ export default function ContentPage() {
       setLoading(false);
     };
     fetchContent();
+    
+    // Re-fetch when token changes (different account login)
+    let lastToken = localStorage.getItem("access_token");
+    const interval = setInterval(() => {
+      const currentToken = localStorage.getItem("access_token");
+      if (currentToken !== lastToken) {
+        lastToken = currentToken;
+        fetchContent();
+      }
+    }, 500);
+    return () => clearInterval(interval);
   }, [filter]);
 
   return (
