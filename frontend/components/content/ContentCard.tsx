@@ -9,6 +9,19 @@ interface ContentCardProps {
   asset: ContentAssetRecord;
 }
 
+function formatBody(body: string, contentType: string): string {
+  // LinkedIn posts and ad copies often have non-markdown formats
+  if (contentType === "ad_copy" && body.startsWith("ContentAsset")) {
+    // Custom ad copy format - wrap in code block
+    return "```\n" + body + "\n```";
+  }
+  if (contentType === "linkedin_post" && !body.startsWith("```")) {
+    // JSON format without code fence - add one
+    return "```json\n" + body + "\n```";
+  }
+  return body;
+}
+
 const TYPE_CONFIG: Record<string, { color: string }> = {
   cold_email: { color: "var(--text-primary)" },
   linkedin_post: { color: "var(--text-primary)" },
@@ -70,7 +83,7 @@ const ContentCard = React.memo(function ContentCard({ asset }: ContentCardProps)
         }}
       >
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {asset.body}
+          {formatBody(asset.body, asset.content_type)}
         </ReactMarkdown>
       </div>
 
