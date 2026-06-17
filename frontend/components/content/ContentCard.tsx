@@ -46,7 +46,6 @@ const ContentCard = React.memo(function ContentCard({ asset, onDelete }: Content
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Delete this content asset?")) return;
     setDeleting(true);
     const token = localStorage.getItem("access_token");
     const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
