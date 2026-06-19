@@ -2,16 +2,36 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { getAccessToken } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, loading, error } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("demo@reachgtm.com");
+  const [password, setPassword] = useState("demo1234");
+  const [autoTrying, setAutoTrying] = useState(true);
 
-  // Auto-redirect if already logged in
+  // Auto-login with demo credentials
   useEffect(() => {
-    if (localStorage.getItem("access_token")) {
+    if (!autoTrying) return;
+    const token = getAccessToken();
+    if (token) {
+      router.push("/dashboard");
+      return;
+    }
+    login({ email: "demo@reachgtm.com", password: "demo1234" })
+      .then(() => {
+        window.location.href = "/dashboard";
+      })
+      .catch(() => {
+        setAutoTrying(false);
+      });
+  }, [autoTrying, login, router]);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const token = getAccessToken();
+    if (token) {
       router.push("/dashboard");
     }
   }, [router]);
@@ -24,6 +44,17 @@ export default function LoginPage() {
     } catch {
       // error already set in useAuth
     }
+  }
+
+  if (autoTrying) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="spinner mx-auto mb-4" />
+          <p className="text-gray-600">Connecting to ReachGTM...</p>
+        </div>
+      </main>
+    );
   }
 
   return (
