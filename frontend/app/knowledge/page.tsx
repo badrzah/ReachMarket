@@ -37,13 +37,20 @@ export default function KnowledgePage() {
     formData.append("doc_type", selectedType);
 
     try {
-      await fetch(`${base}/api/v1/knowledge/upload`, {
+      const res = await fetch(`${base}/api/v1/knowledge/upload`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-      await fetchDocs();
-    } catch {}
+      if (res.ok) {
+        await fetchDocs();
+      } else {
+        const err = await res.text().catch(() => "Upload failed");
+        alert(`Upload error: ${err.slice(0, 200)}`);
+      }
+    } catch (e) {
+      alert("Network error during upload");
+    }
     setUploading(false);
   };
 
