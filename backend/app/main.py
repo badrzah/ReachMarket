@@ -1,11 +1,36 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+from starlette.requests import Request
 from backend.app.db.connection import init_pool, close_pool, get_pool
 from backend.app.middleware.tenant import TenantMiddleware
 from backend.app.middleware.rate_limit import RateLimitMiddleware
 from backend.app.api import auth, chat, strategy, content, knowledge
 from pathlib import Path
+
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://reachgtm-frontend.badrpcc.workers.dev",
+    "https://reachgtm-frontend.pages.dev",
+]
+
+class CORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        origin = request.headers.get("origin", "")
+        if request.method == "OPTIONS":
+            response = Response()
+        else:
+            response = await call_next(request)
+
+        if origin in ALLOWED_ORIGINS or origin:
+            response.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
+            response.headers["Access-Control-Allow-Methods"] = "*"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Max-Age"] = "600"
+
+        return response
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,19 +46,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="ReachGTM Backend", version="0.1.0", lifespan=lifespan)
 
+app.add_middleware(CORSMiddleware)
 app.add_middleware(TenantMiddleware)
 app.add_middleware(RateLimitMiddleware)
-
-app.add_middleware(CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://reachgtm-frontend.badrpcc.workers.dev",
-        "https://reachgtm-frontend.pages.dev",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
