@@ -40,13 +40,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="ReachGTM Agents", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://backend:8000",
-        "https://reachgtm-frontend.badrpcc.workers.dev",
-        "https://reachgtm-frontend.pages.dev",
-        "https://reachgtm-backend-production.up.railway.app",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
