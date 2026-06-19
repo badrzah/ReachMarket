@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "frontend/Dockerfile",
+    "context": "."
+  },
+  "deploy": {
+    "startCommand": "node server.js",
+    "healthcheckPath": "/"
+  }
+}
