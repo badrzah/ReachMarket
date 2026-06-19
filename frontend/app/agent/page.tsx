@@ -35,7 +35,7 @@ export default function AgentChatPage() {
     setInput("");
     setLoading(true);
 
-    const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const base = "https://reachgtm-api-proxy.badrpcc.workers.dev";
 
     try {
       const res = await authFetch(`${base}/api/v1/chat/`, {
