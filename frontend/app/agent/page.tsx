@@ -35,10 +35,10 @@ export default function AgentChatPage() {
     setInput("");
     setLoading(true);
 
-    const base = "https://reachgtm-api-proxy.badrpcc.workers.dev";
+    const base = "https://reachgtm-agents-production.up.railway.app";
 
     try {
-      const res = await authFetch(`${base}/api/v1/chat/`, {
+      const res = await authFetch(`${base}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
