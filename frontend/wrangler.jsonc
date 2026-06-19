@@ -9,7 +9,7 @@
 	],
 	"workers_dev": true,
 	"vars": {
-		"NEXT_PUBLIC_API_URL": "https://reachgtm-backend-production.up.railway.app"
+		"NEXT_PUBLIC_API_URL": "https://reachgtm-api-proxy.badrpcc.workers.dev"
 	},
 	"assets": {
 		"directory": ".open-next/assets",
