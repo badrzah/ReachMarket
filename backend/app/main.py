@@ -21,6 +21,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="ReachGTM Backend", version="0.1.0", lifespan=lifespan)
 
+app.add_middleware(TenantMiddleware)
+app.add_middleware(RateLimitMiddleware)
+
 app.add_middleware(CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
@@ -31,9 +34,6 @@ app.add_middleware(CORSMiddleware,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(TenantMiddleware)
-app.add_middleware(RateLimitMiddleware)
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
