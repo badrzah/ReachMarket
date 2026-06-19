@@ -58,7 +58,7 @@ class TestStrategyService:
         }
         mock_conn.fetchrow.return_value = mock_row
 
-        result = await strategy_service.get_strategy(mock_conn, str(strategy_id))
+        result = await strategy_service.get_strategy(mock_conn, str(strategy_id), str(mock_row["company_id"]))
         assert result is not None
         assert result["status"] == "complete"
 
@@ -70,7 +70,7 @@ class TestStrategyService:
         mock_conn = AsyncMock()
         mock_conn.fetchrow.return_value = None
 
-        result = await strategy_service.get_strategy(mock_conn, str(uuid.uuid4()))
+        result = await strategy_service.get_strategy(mock_conn, str(uuid.uuid4()), str(uuid.uuid4()))
         assert result is None
 
     @pytest.mark.asyncio
@@ -103,7 +103,7 @@ class TestStrategyService:
         ]
         mock_conn.fetch.return_value = mock_rows
 
-        result = await strategy_service.list_strategies(mock_conn)
+        result = await strategy_service.list_strategies(mock_conn, str(uuid.uuid4()))
         assert len(result) == 2
         assert result[0]["status"] == "complete"
 

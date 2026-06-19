@@ -2,7 +2,7 @@
 
 import uuid
 import pytest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime
 
 
@@ -61,7 +61,7 @@ class TestContentService:
             }
         ]
 
-        result = await content_service.list_content_assets(mock_conn)
+        result = await content_service.list_content_assets(mock_conn, str(uuid.uuid4()))
         assert len(result) == 1
         assert result[0]["validation_status"] == "approved"
 
@@ -74,7 +74,7 @@ class TestContentService:
         mock_conn.fetch.return_value = []
 
         result = await content_service.list_content_assets(
-            mock_conn, content_type="linkedin_post"
+            mock_conn, str(uuid.uuid4()), content_type="linkedin_post"
         )
         assert len(result) == 0
 
@@ -97,7 +97,7 @@ class TestContentService:
             "created_at": datetime.utcnow(),
         }
 
-        result = await content_service.get_content_asset(mock_conn, str(asset_id))
+        result = await content_service.get_content_asset(mock_conn, str(asset_id), str(uuid.uuid4()))
         assert result is not None
         assert result["content_type"] == "linkedin_post"
 
@@ -109,7 +109,7 @@ class TestContentService:
         mock_conn = AsyncMock()
         mock_conn.fetchrow.return_value = None
 
-        result = await content_service.get_content_asset(mock_conn, str(uuid.uuid4()))
+        result = await content_service.get_content_asset(mock_conn, str(uuid.uuid4()), str(uuid.uuid4()))
         assert result is None
 
     @pytest.mark.asyncio
@@ -134,8 +134,10 @@ class TestContentService:
         }
 
         # Mock transaction context manager
-        mock_conn.transaction.return_value.__aenter__ = AsyncMock()
-        mock_conn.transaction.return_value.__aexit__ = AsyncMock()
+        mock_transaction = MagicMock()
+        mock_transaction.__aenter__ = AsyncMock()
+        mock_transaction.__aexit__ = AsyncMock()
+        mock_conn.transaction = MagicMock(return_value=mock_transaction)
 
         assets = [
             {"title": "Email 1", "body": "Body 1", "type": "cold_email"},

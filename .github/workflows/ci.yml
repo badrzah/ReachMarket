@@ -34,45 +34,52 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    env:
+      PYTHONPATH: .
+      DATABASE_URL: postgresql://postgres:***@localhost:5432/reachgtm_test
+      JWT_SECRET: test-secret-do-not-use-in-prod
+      OPENAI_API_KEY: test
+      REDIS_URL: redis://localhost:***@v4
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r backend/requirements.txt
-      - env:
-          PYTHONPATH: .
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/reachgtm_test
-          JWT_SECRET: test-secret-do-not-use-in-prod
-          OPENAI_API_KEY: test
-          REDIS_URL: redis://localhost:6379
-        run: pytest backend/tests/ -v
+      - name: Install backend deps
+        run: pip install -r backend/requirements.txt
+      - name: Run backend tests
+        run: pytest backend/tests/ --import-mode=importlib -v
 
   test-agents:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
+      DATABASE_URL: postgresql://postgres:***@localhost:5432/reachgtm_test
+      OPENAI_API_KEY: test
+      REDIS_URL: redis://localhost:***@v4
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r agents/requirements.txt
-      - env:
-          PYTHONPATH: .
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/reachgtm_test
-          OPENAI_API_KEY: test
-          REDIS_URL: redis://localhost:6379
-        run: pytest agents/tests/ -v
+      - name: Install agents deps
+        run: pip install -r agents/requirements.txt
+      - name: Run agents tests
+        run: pytest agents/tests/ --import-mode=importlib -v
 
-  lint-frontend:
+  test-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - working-directory: frontend
-        run: npm install
-      - working-directory: frontend
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+      - name: Lint frontend
+        working-directory: frontend
         run: npx eslint . --max-warnings 0
-      - working-directory: frontend
+      - name: Type check frontend
+        working-directory: frontend
         run: npm run type-check
