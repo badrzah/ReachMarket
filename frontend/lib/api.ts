@@ -9,7 +9,7 @@ import type {
 import { setTokens, clearTokens } from "@/lib/auth";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
+  baseURL: "https://reachgtm-api-proxy.badrpcc.workers.dev",
   headers: { "Content-Type": "application/json" },
 });
 

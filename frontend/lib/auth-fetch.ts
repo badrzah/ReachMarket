@@ -24,7 +24,7 @@ async function tryRefreshToken(): Promise<boolean> {
 
   isRefreshing = true;
   refreshPromise = (async () => {
-    const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const base = "https://reachgtm-api-proxy.badrpcc.workers.dev";
     const refreshToken = localStorage.getItem("refresh_token");
     if (!refreshToken) return false;
 
@@ -54,7 +54,7 @@ export async function authFetch(
   input: URL | RequestInfo,
   options?: AuthFetchOptions
 ): Promise<Response> {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  const base = "https://reachgtm-api-proxy.badrpcc.workers.dev";
   const url = typeof input === "string" && input.startsWith("/")
     ? `${base}${input}`
     : input;
