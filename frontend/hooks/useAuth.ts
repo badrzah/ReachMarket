@@ -21,7 +21,7 @@ export function useAuth() {
       try {
         // Try to login with demo credentials first
         const tokens = await authApi.login({
-          email: "demo@reachgtm.com",
+          email: "demo2@reachgtm.com",
           password: "demo1234",
         });
         setTokens(tokens.access_token, tokens.refresh_token);
@@ -29,7 +29,7 @@ export function useAuth() {
         // If login fails, create demo account
         try {
           const tokens = await authApi.register({
-            email: "demo@reachgtm.com",
+            email: "demo2@reachgtm.com",
             password: "demo1234",
             company_name: "Demo Company",
           });

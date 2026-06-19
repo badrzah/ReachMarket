@@ -19,7 +19,7 @@ export default function LoginPage() {
       router.push("/dashboard");
       return;
     }
-    login({ email: "demo@reachgtm.com", password: "demo1234" })
+    login({ email: "demo2@reachgtm.com", password: "demo1234" })
       .then(() => {
         window.location.href = "/dashboard";
       })
