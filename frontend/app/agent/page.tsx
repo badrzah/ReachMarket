@@ -69,14 +69,17 @@ export default function AgentChatPage() {
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
       let agentResponse = "";
+      let buffer = "";
 
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n");
+          buffer += decoder.decode(value, { stream: !done });
+          const lines = buffer.split("\n");
+          // Keep the last (potentially incomplete) line in the buffer
+          buffer = lines.pop() || "";
 
           for (const line of lines) {
             if (line.startsWith("data: ")) {
@@ -90,6 +93,17 @@ export default function AgentChatPage() {
               } catch {}
             }
           }
+        }
+        // Process any remaining data in buffer
+        if (buffer.startsWith("data: ")) {
+          try {
+            const parsed = JSON.parse(buffer.slice(6));
+            if (parsed.event === "agent_output" && parsed.message) {
+              agentResponse = parsed.message;
+            } else if (parsed.data?.response) {
+              agentResponse = parsed.data.response;
+            }
+          } catch {}
         }
       }
 
