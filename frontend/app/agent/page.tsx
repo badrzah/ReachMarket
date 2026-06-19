@@ -42,7 +42,9 @@ export default function AgentChatPage() {
       try {
         const token = localStorage.getItem("access_token");
         if (!token) return {};
-        const payload = JSON.parse(atob(token.split(".")[1]));
+        // base64url → base64 (fix -_ chars)
+        const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        const payload = JSON.parse(atob(base64));
         return { company_id: payload.company_id, sub: payload.sub };
       } catch {
         return {};
