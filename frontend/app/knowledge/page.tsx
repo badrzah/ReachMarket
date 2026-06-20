@@ -55,7 +55,6 @@ export default function KnowledgePage() {
   };
 
   const handleDelete = async (docId: string) => {
-    if (!confirm("Delete this document? This cannot be undone.")) return;
     const token = localStorage.getItem("access_token");
     const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     try {
