@@ -54,6 +54,26 @@ export default function KnowledgePage() {
     setUploading(false);
   };
 
+  const handleDelete = async (docId: string) => {
+    if (!confirm("Delete this document? This cannot be undone.")) return;
+    const token = localStorage.getItem("access_token");
+    const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    try {
+      const res = await fetch(`${base}/api/v1/knowledge/${docId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        await fetchDocs();
+      } else {
+        const err = await res.text().catch(() => "Delete failed");
+        alert(`Delete error: ${err.slice(0, 200)}`);
+      }
+    } catch {
+      alert("Network error during delete");
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
@@ -168,6 +188,7 @@ export default function KnowledgePage() {
                   <th className="text-left text-xs font-medium px-4 py-3" style={{ color: "var(--text-muted)" }}>Status</th>
                   <th className="text-left text-xs font-medium px-4 py-3" style={{ color: "var(--text-muted)" }}>Chunks</th>
                   <th className="text-left text-xs font-medium px-4 py-3" style={{ color: "var(--text-muted)" }}>Date</th>
+                  <th className="text-right text-xs font-medium px-4 py-3" style={{ color: "var(--text-muted)" }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -187,6 +208,19 @@ export default function KnowledgePage() {
                     </td>
                     <td className="px-4 py-3 text-sm" style={{ color: "var(--text-muted)" }}>
                       {new Date(doc.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleDelete(doc.id)}
+                        className="p-1.5 rounded-lg transition-all hover:bg-red-100 hover:text-red-600"
+                        style={{ color: "var(--text-muted)" }}
+                        title="Delete document"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                      </button>
                     </td>
                   </tr>
                 ))}
