@@ -35,32 +35,15 @@ export default function AgentChatPage() {
     setInput("");
     setLoading(true);
 
-    const base = "https://reachgtm-chat-proxy.reminiscent-moonstone.workers.dev";
-
-    // Decode JWT to get company_id and user_id
-    const getJwtPayload = (): { company_id?: string; sub?: string } => {
-      try {
-        const token = localStorage.getItem("access_token");
-        if (!token) return {};
-        // base64url → base64 (fix -_ chars)
-        const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-        const payload = JSON.parse(atob(base64));
-        return { company_id: payload.company_id, sub: payload.sub };
-      } catch {
-        return {};
-      }
-    };
+    const base = "https://reachgtm-api-proxy.badrpcc.workers.dev";
 
     try {
-      const jwtPayload = getJwtPayload();
-      const res = await authFetch(`${base}/chat`, {
+      const res = await authFetch(`${base}/api/v1/chat/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: userMessage.content,
           session_id: null,
-          company_id: jwtPayload.company_id,
-          user_id: jwtPayload.sub,
         }),
       });
 
