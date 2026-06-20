@@ -1,12 +1,10 @@
 import io
 import uuid
 import asyncpg
-from openai import AsyncOpenAI
+import httpx
 from pypdf import PdfReader
 from docx import Document as DocxDocument
 from backend.app.config import settings
-
-openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
 
 CHUNK_SIZE = 512
 CHUNK_OVERLAP = 50
@@ -38,11 +36,15 @@ def _chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OV
     return chunks
 
 async def _embed_texts(texts: list[str]) -> list[list[float]]:
-    response = await openai_client.embeddings.create(
-        model="text-embedding-3-small",
-        input=texts,
-    )
-    return [item.embedding for item in response.data]
+    """Generate embeddings via the agents service (which has the working API key)."""
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        resp = await client.post(
+            f"{settings.agents_url}/embed",
+            json={"texts": texts},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data["embeddings"]
 
 async def ingest_document(
     conn: asyncpg.Connection,

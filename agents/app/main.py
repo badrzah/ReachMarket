@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 from agents.app.config import settings
 from shared.schemas import AgentEventType, AgentEvent
@@ -72,9 +72,27 @@ class RunRequest(BaseModel):
     mode: Optional[str] = "full"  # full, content_only, chat
 
 
+class EmbedRequest(BaseModel):
+    texts: List[str]
+
+
 @app.get("/health")
 async def health():
     return {"service": "agents", "status": "ok"}
+
+
+@app.post("/embed")
+async def embed(body: EmbedRequest):
+    """Generate embeddings for the given texts."""
+    from openai import AsyncOpenAI
+    from agents.app.config import settings as agent_settings
+    client = AsyncOpenAI(api_key=agent_settings.openai_api_key)
+    response = await client.embeddings.create(
+        model="text-embedding-3-small",
+        input=body.texts,
+    )
+    return {"embeddings": [item.embedding for item in response.data]}
+
 
 
 @app.post("/run")
