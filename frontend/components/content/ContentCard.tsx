@@ -102,11 +102,7 @@ const ContentCard = React.memo(function ContentCard({ asset, onDelete }: Content
         }}
       >
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {asset.content_type === "ad_copy" && asset.body.startsWith("ContentAsset")
-            ? "```\n" + asset.body + "\n```"
-            : asset.content_type === "linkedin_post" && !asset.body.startsWith("```")
-              ? "```json\n" + asset.body + "\n```"
-              : asset.body}
+          {asset.body}
         </ReactMarkdown>
       </div>
 
