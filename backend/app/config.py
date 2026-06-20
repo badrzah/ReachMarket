@@ -17,3 +17,4 @@ class Settings(BaseSettings):
     environment: str = "development"
 
 settings = Settings()
+# Force API key reload
