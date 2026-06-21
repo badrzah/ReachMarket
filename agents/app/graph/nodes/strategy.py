@@ -122,10 +122,10 @@ async def strategy_node(state: GTMState) -> GTMState:
     try:
         llm = ChatOpenAI(
             model="gpt-4o-mini",
-            temperature=0.4,
+            temperature=0.7,
             api_key=settings.openai_api_key,
-            max_tokens=4000,
-            request_timeout=60,
+            max_tokens=8000,
+            request_timeout=120,
         )
 
         response = await llm.ainvoke([
