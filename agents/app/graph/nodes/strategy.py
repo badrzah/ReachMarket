@@ -118,6 +118,43 @@ async def strategy_node(state: GTMState) -> GTMState:
     except Exception as exc:
         logger.warning("PM skills unavailable (%s), proceeding without", exc)
 
+    # Query knowledge base for relevant documents
+    knowledge_context = ""
+    try:
+        import asyncpg
+        from openai import AsyncOpenAI
+        from agents.app.config import settings as agent_settings
+
+        openai_client = AsyncOpenAI(api_key=agent_settings.openai_api_key)
+        kb_query = f"{research.company_profile.name} {research.company_profile.industry} {research.company_profile.description}"
+        embedding_resp = await openai_client.embeddings.create(
+            model="text-embedding-3-small",
+            input=kb_query,
+        )
+        query_embedding = embedding_resp.data[0].embedding
+
+        conn = await asyncpg.connect(agent_settings.database_url)
+        try:
+            rows = await conn.fetch(
+                """SELECT content, namespace
+                   FROM document_chunks
+                   WHERE company_id = $1::uuid
+                   ORDER BY embedding <=> $2::vector
+                   LIMIT 8""",
+                state.company_id, str(query_embedding),
+            )
+            if rows:
+                sections = []
+                for r in rows:
+                    doc_type = r["namespace"].split(":")[-1] if ":" in r["namespace"] else "document"
+                    sections.append(f"[{doc_type}]\n{r['content']}")
+                knowledge_context = "Knowledge Base Context:\n\n" + "\n\n".join(sections)
+                logger.info("Retrieved %d knowledge chunks for strategy", len(rows))
+        finally:
+            await conn.close()
+    except Exception as exc:
+        logger.warning("Knowledge base retrieval failed for strategy: %s", exc)
+
     # Generate strategy with LLM
     try:
         llm = ChatOpenAI(
@@ -133,6 +170,7 @@ async def strategy_node(state: GTMState) -> GTMState:
             HumanMessage(content=(
                 f"Research Report:\n{research_context}\n"
                 f"{pm_context}\n"
+                f"{knowledge_context}\n"
                 f"Generate a complete GTM strategy in the following JSON format. "
                 f"Return ONLY valid JSON, no markdown:\n{STRATEGY_OUTPUT_SCHEMA}"
             )),
