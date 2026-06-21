@@ -84,6 +84,18 @@ export default function Sidebar() {
           );
         })}
       </div>
+
+      {/* Bottom section */}
+      <div className="pt-4 mt-auto border-t border-gray-200">
+        <div className="p-3 rounded-md bg-white border border-gray-200">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <span className="text-xs font-medium text-gray-600">
+              Free Plan
+            </span>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }
