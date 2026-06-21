@@ -174,25 +174,40 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {strategies.slice(0, 5).map((s: any) => (
-                <Link
-                  key={s.id}
-                  href={`/strategy/${s.id}`}
-                  className="flex items-center justify-between p-3 rounded-lg transition-all hover:bg-[var(--bg-hover)]"
-                >
-                  <div className="flex items-center gap-3">
+                <div key={s.id} className="flex items-center justify-between p-3 rounded-lg transition-all hover:bg-[var(--bg-hover)]">
+                  <Link href={`/strategy/${s.id}`} className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-tertiary)" }}>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        {s.payload?.positioning_statement?.slice(0, 60) || `Strategy ${s.id.slice(0, 8)}`}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {s.payload?.gtm_strategy?.value_proposition?.headline || s.payload?.positioning_statement || `Strategy ${s.id.slice(0, 8)}`}
                       </p>
                       <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                         {new Date(s.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                  </div>
-                  <span className={`badge badge-${s.status}`}>{s.status}</span>
-                </Link>
+                  </Link>
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      const token = localStorage.getItem("access_token");
+                      const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+                      await fetch(`${base}/api/v1/strategy/${s.id}`, {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` },
+                      });
+                      setStrategies((prev) => prev.filter((st: any) => st.id !== s.id));
+                    }}
+                    className="ml-2 p-1.5 rounded-lg transition-all hover:bg-red-100 hover:text-red-600 shrink-0"
+                    style={{ color: "var(--text-muted)" }}
+                    title="Delete strategy"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </div>
               ))}
             </div>
           )}

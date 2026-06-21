@@ -150,3 +150,16 @@ async def get_strategy(
     if not strategy:
         raise HTTPException(status_code=404, detail="Strategy not found")
     return strategy
+
+
+@router.delete("/{strategy_id}")
+async def delete_strategy(
+    strategy_id: str,
+    request: Request,
+    conn: asyncpg.Connection = Depends(get_db_tenant),
+):
+    """Delete a strategy."""
+    result = await strategy_service.delete_strategy(conn, strategy_id, request.state.company_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    return {"status": "deleted"}

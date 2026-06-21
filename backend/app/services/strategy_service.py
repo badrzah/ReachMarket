@@ -100,6 +100,15 @@ async def invoke_agents_stream(
                     yield line
 
 
+async def delete_strategy(conn: asyncpg.Connection, strategy_id: str, company_id: str) -> bool:
+    """Delete a strategy by ID (scoped to company). Returns True if deleted."""
+    result = await conn.execute(
+        "DELETE FROM strategies WHERE id = $1 AND company_id = $2",
+        uuid.UUID(strategy_id), uuid.UUID(company_id),
+    )
+    return result != "DELETE 0"
+
+
 def _row_to_dict(row: asyncpg.Record) -> dict:
     """Convert asyncpg Record to dict, serializing UUIDs and datetimes."""
     d = dict(row)
