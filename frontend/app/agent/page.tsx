@@ -165,10 +165,7 @@ export default function AgentChatPage() {
               <div
                 className="max-w-[80%] p-4 rounded-2xl"
                 style={{
-                  background:
-                    msg.role === "user"
-                      ? "linear-gradient(135deg, var(--accent-purple), var(--accent-purple-dark))"
-                      : "var(--bg-card)",
+                  background: "var(--bg-card)",
                   border: msg.role === "agent" ? "1px solid var(--border-subtle)" : "none",
                   borderBottomRightRadius: msg.role === "user" ? "4px" : undefined,
                   borderBottomLeftRadius: msg.role === "agent" ? "4px" : undefined,
