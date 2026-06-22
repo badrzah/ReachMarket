@@ -53,15 +53,19 @@ async def stream_strategy(
     from jose import jwt, JWTError
     from backend.app.config import settings
 
-    # Validate JWT from query param (SSE can't send headers)
+    # Validate JWT from query param (SSE can't send headers).
+    # Fall back to demo mode like TenantMiddleware does.
+    from backend.app.middleware.tenant import DEMO_COMPANY_ID, DEMO_USER_ID
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
         company_id = payload.get("company_id")
         user_id = payload.get("sub")
         if not company_id:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            company_id = str(DEMO_COMPANY_ID)
+            user_id = str(DEMO_USER_ID)
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        company_id = str(DEMO_COMPANY_ID)
+        user_id = str(DEMO_USER_ID)
 
     # Parse company_profile from JSON string
     try:
